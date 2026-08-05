@@ -1,7 +1,7 @@
-// Bedrock service worker — enables offline use and installability.
+// SierraVista Behavioral Health service worker — enables offline use and installability.
 // Bump this version any time index.html (or any cached file) changes,
 // so returning users get the update instead of a stale cached copy.
-const CACHE_VERSION = "bedrock-v1";
+const CACHE_VERSION = "sierravista-v3";
 
 const CORE_ASSETS = [
   "./",
