@@ -1,0 +1,31 @@
+{
+  "name": "SierraVista Behavioral Health",
+  "short_name": "SierraVista",
+  "description": "A free daily recovery companion: gratitude journaling, sobriety tracking, nightly reflection, and local resources.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#2E2440",
+  "theme_color": "#2E2440",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
