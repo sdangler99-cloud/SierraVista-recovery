@@ -882,8 +882,8 @@ var PMR_STEPS = [
   { t: "Whole body", b: "Take one more slow breath. Let everything go loose, all at once." }
 ];
 var BREATH_PHASES = [
-  { label: "Breathe in", scale: 1 }, { label: "Hold", scale: 1 },
-  { label: "Breathe out", scale: 0.6 }, { label: "Hold", scale: 0.6 }
+  { label: "Breathe in" }, { label: "Hold" },
+  { label: "Breathe out" }, { label: "Hold" }
 ];
 var COPING_CATEGORIES = [
   { name: "Physical & movement", icon: "\uD83C\uDFC3", items: [
@@ -1051,37 +1051,61 @@ function renderCalmTab(t) {
     ["Something to reach for when a craving hits, or when you just need a minute."]));
 
   /* ---- box breathing ---- */
+  var BOX_SIZE = 130;
+  var BOX_DOT = 16;
+  var BOX_PHASE_MS = 4000;
+  var BOX_POINTS = [
+    { x: 0, y: BOX_SIZE },        // start: bottom-left
+    { x: 0, y: 0 },               // breathe in: up the left side
+    { x: BOX_SIZE, y: 0 },        // hold: across the top
+    { x: BOX_SIZE, y: BOX_SIZE }, // breathe out: down the right side
+    { x: 0, y: BOX_SIZE }         // hold: across the bottom, back to start
+  ];
   var breathPhaseTxt = el("div", { style: { fontFamily: t.display, fontWeight: "800", fontSize: "16px", color: t.text, marginBottom: "14px" } }, ["Ready when you are"]);
-  var breathCircle = el("div", { style: {
-    width: "120px", height: "120px", borderRadius: "50%", background: t.secondary, margin: "0 auto 14px",
-    transition: "transform 4s ease-in-out, opacity 4s ease-in-out", transform: "scale(0.6)", opacity: "0.55"
+  var breathDot = el("div", { style: {
+    position: "absolute", width: BOX_DOT + "px", height: BOX_DOT + "px", borderRadius: "50%",
+    background: t.primary, boxShadow: "0 0 0 5px " + t.primary + "33",
+    left: (BOX_POINTS[0].x - BOX_DOT / 2) + "px", top: (BOX_POINTS[0].y - BOX_DOT / 2) + "px"
   } });
+  var breathSquare = el("div", { style: {
+    position: "relative", width: BOX_SIZE + "px", height: BOX_SIZE + "px", margin: "0 auto 14px",
+    border: "3px solid " + t.border, borderRadius: "16px", background: t.bgSoft, boxSizing: "border-box"
+  } }, [breathDot]);
   var breathHint = el("div", { style: { fontSize: "12px", color: t.textMuted, marginBottom: "16px" } }, ["4 seconds in, 4 hold, 4 out, 4 hold."]);
-  var breathing = false, breathIdx = 0, breathTimer = null;
+  var breathing = false, breathIdx = -1, breathStart = null, breathRAF = null;
   var breathBtn = primaryButton(t, "Start", function() {
     breathing = !breathing;
     breathBtn.textContent = breathing ? "Stop" : "Start";
     if (breathing) {
-      breathIdx = 0;
-      runBreathPhase();
-      breathTimer = setInterval(runBreathPhase, 4000);
+      breathIdx = -1;
+      breathStart = performance.now();
+      breathRAF = requestAnimationFrame(tickBreath);
     } else {
-      clearInterval(breathTimer);
+      if (breathRAF) cancelAnimationFrame(breathRAF);
       breathPhaseTxt.textContent = "Ready when you are";
-      breathCircle.style.transform = "scale(0.6)";
-      breathCircle.style.opacity = "0.55";
+      breathDot.style.left = (BOX_POINTS[0].x - BOX_DOT / 2) + "px";
+      breathDot.style.top = (BOX_POINTS[0].y - BOX_DOT / 2) + "px";
     }
   });
-  function runBreathPhase() {
-    var p = BREATH_PHASES[breathIdx % 4];
-    breathPhaseTxt.textContent = p.label;
-    breathCircle.style.transform = "scale(" + p.scale + ")";
-    breathCircle.style.opacity = p.scale === 1 ? "1" : "0.55";
-    breathIdx++;
+  function tickBreath(now) {
+    if (!breathing) return;
+    var elapsed = now - breathStart;
+    var segIdx = Math.floor(elapsed / BOX_PHASE_MS) % 4;
+    var segProgress = (elapsed % BOX_PHASE_MS) / BOX_PHASE_MS;
+    if (segIdx !== breathIdx) {
+      breathIdx = segIdx;
+      breathPhaseTxt.textContent = BREATH_PHASES[segIdx].label;
+    }
+    var a = BOX_POINTS[segIdx], b = BOX_POINTS[segIdx + 1];
+    var x = a.x + (b.x - a.x) * segProgress;
+    var y = a.y + (b.y - a.y) * segProgress;
+    breathDot.style.left = (x - BOX_DOT / 2) + "px";
+    breathDot.style.top = (y - BOX_DOT / 2) + "px";
+    breathRAF = requestAnimationFrame(tickBreath);
   }
   wrap.appendChild(card(t, [
     sectionLabel(t, "Box breathing"),
-    el("div", { style: { textAlign: "center" } }, [breathPhaseTxt, breathCircle, breathHint, breathBtn])
+    el("div", { style: { textAlign: "center" } }, [breathPhaseTxt, breathSquare, breathHint, breathBtn])
   ], { marginBottom: "14px" }));
 
   /* ---- 5-4-3-2-1 grounding ---- */
