@@ -977,6 +977,26 @@ var CONTROL_CATEGORY_BREAKS = {
   30: "Self-Talk & Kindness",
   40: "Resilience & Gratitude"
 };
+// Low numbers on the scale = "Can control" (lots of agency) → congratulate.
+// High numbers = "Can't control" (mostly out of their hands) → comfort/uplift.
+var CONTROL_QUOTES_AGENCY = [
+  "That's real strength — naming what's yours to hold.",
+  "Nice. Claiming your control here is not nothing.",
+  "You're steering this one. That matters.",
+  "Good — that clarity is worth holding onto.",
+  "You know your part in this. That's the work.",
+  "That's exactly the kind of clarity that moves things forward.",
+  "Recognizing what's yours to carry is half the battle. Well done."
+];
+var CONTROL_QUOTES_UPLIFT = [
+  "It's okay that this one feels out of your hands. You don't have to hold what isn't yours.",
+  "Some things really aren't yours to carry. Let this one rest a little.",
+  "You don't have to fix what you can't control — just breathe through it.",
+  "This won't feel this heavy forever. You're allowed to set it down for now.",
+  "Not everything is yours to solve today. That's not failure — that's true.",
+  "It's okay to feel small next to this. You're still doing your part.",
+  "Letting go of what isn't yours isn't giving up — it's wisdom."
+];
 
 /* ===========================================================
    COPING SKILLS TAB
@@ -1173,6 +1193,13 @@ function renderCopingTab(t) {
 
   /* ---- right now: circle-of-control scale (from Groundwork) ---- */
   var controlScale = readLS("calm:control:scale", null);
+  var scaleQuote = el("div", {
+    style: {
+      display: controlScale ? "block" : "none", fontFamily: t.display, fontStyle: "italic", fontWeight: "700",
+      fontSize: "14px", lineHeight: "1.4", color: t.text, background: t.bgSoft, borderRadius: "12px",
+      padding: "12px 14px", marginTop: "12px"
+    }
+  }, [controlScale ? (controlScale <= 5 ? CONTROL_QUOTES_AGENCY[0] : CONTROL_QUOTES_UPLIFT[0]) : ""]);
   var scaleGrid = el("div", { style: { display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "8px", marginTop: "6px" } });
   for (var scaleN = 1; scaleN <= 10; scaleN++) {
     (function(n) {
@@ -1191,6 +1218,10 @@ function renderCopingTab(t) {
           b.style.background = t.bgSoft; b.style.color = t.text; b.style.borderColor = t.border;
         });
         btn.style.background = t.primary; btn.style.color = t.primaryText; btn.style.borderColor = t.primary;
+
+        var pool = n <= 5 ? CONTROL_QUOTES_AGENCY : CONTROL_QUOTES_UPLIFT;
+        scaleQuote.textContent = pool[Math.floor(Math.random() * pool.length)];
+        scaleQuote.style.display = "block";
       });
       scaleGrid.appendChild(btn);
     })(scaleN);
@@ -1203,7 +1234,8 @@ function renderCopingTab(t) {
     scaleGrid,
     el("div", { style: { display: "flex", justifyContent: "space-between", fontSize: "11px", color: t.textMuted, fontWeight: "700", marginTop: "6px" } }, [
       el("span", {}, ["Can control"]), el("span", {}, ["Can't control"])
-    ])
+    ]),
+    scaleQuote
   ]));
 
   return wrap;
